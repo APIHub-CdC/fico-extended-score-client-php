@@ -5,20 +5,22 @@ namespace FicoEXTScored\Client\Model;
 use \ArrayAccess;
 use \FicoEXTScored\Client\ObjectSerializer;
 
-class Error implements ModelInterface, ArrayAccess
+class Respuesta implements ModelInterface, ArrayAccess
 {
     const DISCRIMINATOR = null;
     
-    protected static $FicoEXTScoredModelName = 'Error';
+    protected static $FicoEXTScoredModelName = 'Respuesta';
     
     protected static $FicoEXTScoredTypes = [
-        'codigo' => 'string',
-        'mensaje' => 'string'
+        'folio_consulta' => 'string',
+        'folio' => 'string',
+        'score' => '\FicoEXTScored\Client\Model\Score'
     ];
     
     protected static $FicoEXTScoredFormats = [
-        'codigo' => null,
-        'mensaje' => null
+        'folio_consulta' => null,
+        'folio' => null,
+        'score' => null
     ];
     
     public static function FicoEXTScoredTypes()
@@ -32,18 +34,21 @@ class Error implements ModelInterface, ArrayAccess
     }
     
     protected static $attributeMap = [
-        'codigo' => 'codigo',
-        'mensaje' => 'mensaje'
+        'folio_consulta' => 'folioConsulta',
+        'folio' => 'folio',
+        'score' => 'score'
     ];
     
     protected static $setters = [
-        'codigo' => 'setCodigo',
-        'mensaje' => 'setMensaje'
+        'folio_consulta' => 'setFolioConsulta',
+        'folio' => 'setFolio',
+        'score' => 'setScore'
     ];
     
     protected static $getters = [
-        'codigo' => 'getCodigo',
-        'mensaje' => 'getMensaje'
+        'folio_consulta' => 'getFolioConsulta',
+        'folio' => 'getFolio',
+        'score' => 'getScore'
     ];
     
     public static function attributeMap()
@@ -72,8 +77,9 @@ class Error implements ModelInterface, ArrayAccess
     
     public function __construct(array $data = null)
     {
-        $this->container['codigo'] = isset($data['codigo']) ? $data['codigo'] : null;
-        $this->container['mensaje'] = isset($data['mensaje']) ? $data['mensaje'] : null;
+        $this->container['folio_consulta'] = isset($data['folio_consulta']) ? $data['folio_consulta'] : null;
+        $this->container['folio'] = isset($data['folio']) ? $data['folio'] : null;
+        $this->container['score'] = isset($data['score']) ? $data['score'] : null;
     }
     
     public function listInvalidProperties()
@@ -87,25 +93,36 @@ class Error implements ModelInterface, ArrayAccess
         return count($this->listInvalidProperties()) === 0;
     }
     
-    public function getCodigo()
+    public function getFolioConsulta()
     {
-        return $this->container['codigo'];
+        return $this->container['folio_consulta'];
     }
     
-    public function setCodigo($codigo)
+    public function setFolioConsulta($folio_consulta)
     {
-        $this->container['codigo'] = $codigo;
+        $this->container['folio_consulta'] = $folio_consulta;
         return $this;
     }
     
-    public function getMensaje()
+    public function getFolio()
     {
-        return $this->container['mensaje'];
+        return $this->container['folio'];
     }
     
-    public function setMensaje($mensaje)
+    public function setFolio($folio)
     {
-        $this->container['mensaje'] = $mensaje;
+        $this->container['folio'] = $folio;
+        return $this;
+    }
+    
+    public function getScore()
+    {
+        return $this->container['score'];
+    }
+    
+    public function setScore($score)
+    {
+        $this->container['score'] = $score;
         return $this;
     }
     

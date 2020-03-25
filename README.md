@@ -1,28 +1,24 @@
-# Fico Extended Score client php
+# FICO extended score client php
 
-Modelo estadístico basado en variables contenidas en el historial crediticio del Cliente, calcula un puntaje matemático que mide el riesgo del Cliente de fallar en sus pagos en un lapso de 12 meses a partir del otorgamiento de un crédito.
+Es el primer score en el mercado mexicano que califica el nivel de cumplimiento de pago de un individuo, considerando al grupo de personas con las que comparto domicilio utilizando un algoritmo exclusivo de Círculo de Crédito.
 
 ## Requisitos
 
 PHP 7.1 ó superior
-
 ### Dependencias adicionales
 - Se debe contar con las siguientes dependencias de PHP:
     - ext-curl
     - ext-mbstring
 - En caso de no ser así, para linux use los siguientes comandos
-
 ```sh
 #ejemplo con php en versión 7.3 para otra versión colocar php{version}-curl
 apt-get install php7.3-curl
 apt-get install php7.3-mbstring
 ```
 - Composer [vea como instalar][1]
-
 ## Instalación
 
 Ejecutar: `composer install`
-
 ## Guía de inicio
 
 ### Paso 1. Generar llave y certificado
@@ -30,7 +26,6 @@ Ejecutar: `composer install`
 - Se tiene que tener un contenedor en formato PKCS12.
 - En caso de no contar con uno, ejecutar las instrucciones contenidas en **lib/Interceptor/key_pair_gen.sh** ó con los siguientes comandos.
 - **opcional**: Para cifrar el contenedor, colocar una contraseña en una variable de ambiente.
-
 ```sh
 export KEY_PASSWORD=your_password
 ```
@@ -46,7 +41,6 @@ export ALIAS=circulo_de_credito
 ```sh
 #Genera la llave privada.
 openssl ecparam -name secp384r1 -genkey -out ${PRIVATE_KEY_FILE}
-
 #Genera el certificado público.
 openssl req -new -x509 -days 365 \
     -key ${PRIVATE_KEY_FILE} \
@@ -63,7 +57,8 @@ openssl pkcs12 -name ${ALIAS} \
     -in ${CERTIFICATE_FILE} -password pass:${KEY_PASSWORD}
 ```
 
-### Paso 2. Carga del certificado dentro del portal de desarrolladores
+### Paso 2. Cargar el certificado dentro del portal de desarrolladores
+
  1. Iniciar sesión.
  2. Dar clic en la sección "**Mis aplicaciones**".
  3. Seleccionar la aplicación.
@@ -76,7 +71,8 @@ openssl pkcs12 -name ${ALIAS} \
       <img src="https://github.com/APIHub-CdC/imagenes-cdc/blob/master/upload_cert.png" width="268">
     </p>
 
-### Paso 3. Descarga del certificado de Círculo de Crédito dentro del portal de desarrolladores
+### Paso 3. Descargar el certificado de Círculo de Crédito dentro del portal de desarrolladores
+
  1. Iniciar sesión.
  2. Dar clic en la sección "**Mis aplicaciones**".
  3. Seleccionar la aplicación.
@@ -88,104 +84,110 @@ openssl pkcs12 -name ${ALIAS} \
     <p align="center">
         <img src="https://github.com/APIHub-CdC/imagenes-cdc/blob/master/download_cert.png" width="268">
     </p>
-
  > Es importante que este contenedor sea almacenado en la siguiente ruta:
  > **/path/to/repository/lib/Interceptor/keypair.p12**
  >
  > Así mismo el certificado proporcionado por círculo de crédito en la siguiente ruta:
  > **/path/to/repository/lib/Interceptor/cdc_cert.pem**
-
 - En caso de que no se almacene así, se debe especificar la ruta donde se encuentra el contenedor y el certificado. Ver el siguiente ejemplo:
-
 ```php
-/**
-* Esto es parte del setUp() de las pruebas unitarias.
-*/
 $password = getenv('KEY_PASSWORD');
-$this->signer = new \APIHub\Client\Interceptor\KeyHandler(
+$this->signer = new \RCCFicoScorePLD\Client\Interceptor\KeyHandler(
     "/example/route/keypair.p12",
     "/example/route/cdc_cert.pem",
     $password
 );
 ```
- > **NOTA:** Sólamente en caso de que el contenedor se haya cifrado, se debe colocar la contraseña en una variable de ambiente e indicar el nombre de la misma, como se ve en la imagen anterior.
-
+ > **NOTA:** Sólamente en caso de que el contenedor haya cifrado, se debe colocar la contraseña en una variable de ambiente e indicar el nombre de la misma, como se ve en la imagen anterior.
+ 
 ### Paso 4. Modificar URL
-
- Modificar la URL de la petición en ***lib/Configuration.php*** en la línea 19, como se muestra en el siguiente fragmento de código:
-
+ Modificar la URL de la petición en ***test/Api/ApiTest.php***, como se muestra en el siguiente fragmento de código:
  ```php
- protected $host = 'the_url';
+$config = new \FicoEXTScored\Client\Configuration();
+$config->setHost('the_url');
  ```
-
+ 
 ### Paso 5. Capturar los datos de la petición
 
 Es importante contar con el setUp() que se encargará de firmar y verificar la petición.
 
 ```php
-<?php
-public function setUp()
-{
+
+public function setUp(){
     $password = getenv('KEY_PASSWORD');
-    $this->signer = new \APIHub\Client\Interceptor\KeyHandler(null, null, $password);
-    $events = new \APIHub\Client\Interceptor\MiddlewareEvents($this->signer);
-    $handler = \GuzzleHttp\HandlerStack::create();
-    $handler->push($events->add_signature_header('x-signature'));
+    $this->signer = new \FicoEXTScored\Client\Interceptor\KeyHandler(null, null, $password);
+
+    $events = new \FicoEXTScored\Client\Interceptor\MiddlewareEvents($this->signer);
+    $handler = handlerStack::create();
+    $handler->push($events->add_signature_header('x-signature'));   
     $handler->push($events->verify_signature_header('x-signature'));
+    $client = new \GuzzleHttp\Client(['handler' => $handler]);
 
-    $client = new \GuzzleHttp\Client([
-        'handler' => $handler,
-        'verify' => false
-    ]);
-    $this->apiInstance = new \APIHub\Client\Api\FicoExtendedScoreApi($client);
-}    
-```
-```php
+    $config = new \FicoEXTScored\Client\Configuration();
+    $config->setHost('the_url');
 
-<?php
-/**
-* Este es el método que se será ejecutado en la prueba ubicado en path/to/repository/test/Api/FicoExtendedScoreApiTest.php
-*/
-public function FicoExtendedScoreApiTest()
-{
-  $x_api_key = "your_api_key";
-  $username = "your_username";
-  $password = "your_password";
-
-  $request = new \APIHub\Client\Model\Persona();
-  $request->setPrimerNombre("XXXXXXXX");
-  $request->setSegundoNombre(null);
-  $request->setApellidoPaterno("XXXXXXXX");
-  $request->setApellidoMaterno("XXXXXXXX");
-  $request->setApellidoAdicional(null);
-  $request->setFechaNacimiento("YYYY-MM-DD");
-  $request->setRfc("XXXXXXXX");
-  $request->setCurp(null);
-
-  $domicilio = new \APIHub\Client\Model\Domicilio();
-  $domicilio->setDireccion("XXXXXXXX");
-  $domicilio->setColonia("XXXXXXXX");
-  $domicilio->setCiudad("XXXXXXXX");
-  $domicilio->setCodigoPostal("XXXXXXXX");
-  $domicilio->setMunicipio("XXXXXXXX");
-  $domicilio->setEstado("XX");
-  $request->setDomicilio($domicilio);
-
-  try {
-      $result = $this->apiInstance->ficoExtendedScore($x_api_key, $username, $password, $request);
-      $this->signer->close();
-      print_r($result);
-  } catch (Exception $e) {
-      echo 'Exception when calling FicoExtendedScoreApi->ficoExtendedScore: ', $e->getMessage(), PHP_EOL;
-  }
+    $this->apiInstance = new \FicoEXTScored\Client\Api\FicoEXTScoredApi($client, $config);
+    $this->x_api_key = "your_api_key";
+    $this->username = "your_username";
+    $this->password = "your_password";
 }
+    
+public function testGetReporte(){
+
+    $request = new \FicoEXTScored\Client\Model\Peticion();
+    $persona = new \FicoEXTScored\Client\Model\Persona();
+    $domicilio = new \FicoEXTScored\Client\Model\Domicilio();        
+    $estado = new \FicoEXTScored\Client\Model\CatalogoEstados();
+        
+    $domicilio->setDireccion("CALVARIO");
+    $domicilio->setColoniaPoblacion("LOMA DE LA PALMA");
+    $domicilio->setDelegacionMunicipio("GUSTAVO A  MADERO");
+    $domicilio->setCiudad("CIUDAD DE MEXICO");
+    $domicilio->setEstado($estado::DF);
+    $domicilio->setCP("07160");
+    $domicilio->setFechaResidencia(null);
+    $domicilio->setNumeroTelefono(null);
+    $domicilio->setTipoDomicilio(null);
+    $domicilio->setTipoAsentamiento(null);
+    $domicilio->setFechaRegistroDomicilio(null);
+    $domicilio->setTipoAltaDomicilio(null);
+    $domicilio->setIdDomicilio(null);
+
+    $persona->setApellidoPaterno("PATERNO");
+    $persona->setApellidoMaterno("MATERNO");
+    $persona->setApellidoAdicional(null);
+    $persona->setNombres("NOMBRES");
+    $persona->setFechaNacimiento("YYYY-MM-DD");
+    $persona->setRFC("PAMN800825569");
+    $persona->setCURP(null);
+    $persona->setNacionalidad("MX");
+    $persona->setResidencia(null);
+    $persona->setEstadoCivil(null);
+    $persona->setSexo(null);
+    $persona->setNumeroDependientes(null);
+    $persona->setFechaDefuncion(null);
+    $persona->setDomicilio($domicilio);
+     
+    $request->setFolio("1235");
+    $request->setPersona($persona);        
+
+    try {
+        $result = $this->apiInstance->getReporte($this->x_api_key, $this->username, $this->password, $request);
+        print_r($result);
+        $this->assertTrue($result->getFolioConsulta()!==null);
+
+        return $result->getFolioConsulta();
+    } catch (Exception $e) {
+        echo 'Exception when calling FicoEXTScoredApi->getReporte: ', $e->getMessage(), PHP_EOL;
+    }
+}
+
 ```
+
 ## Pruebas unitarias
 
 Para ejecutar las pruebas unitarias:
-
 ```sh
 ./vendor/bin/phpunit
 ```
-
 [1]: https://getcomposer.org/doc/00-intro.md#installation-linux-unix-macos
