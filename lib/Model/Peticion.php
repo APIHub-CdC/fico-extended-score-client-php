@@ -5,20 +5,20 @@ namespace FicoEXTScored\Client\Model;
 use \ArrayAccess;
 use \FicoEXTScored\Client\ObjectSerializer;
 
-class Error implements ModelInterface, ArrayAccess
+class Peticion implements ModelInterface, ArrayAccess
 {
     const DISCRIMINATOR = null;
     
-    protected static $FicoEXTScoredModelName = 'Error';
+    protected static $FicoEXTScoredModelName = 'Peticion';
     
     protected static $FicoEXTScoredTypes = [
-        'codigo' => 'string',
-        'mensaje' => 'string'
+        'folio' => 'string',
+        'persona' => '\FicoEXTScored\Client\Model\Persona'
     ];
     
     protected static $FicoEXTScoredFormats = [
-        'codigo' => null,
-        'mensaje' => null
+        'folio' => null,
+        'persona' => null
     ];
     
     public static function FicoEXTScoredTypes()
@@ -32,18 +32,18 @@ class Error implements ModelInterface, ArrayAccess
     }
     
     protected static $attributeMap = [
-        'codigo' => 'codigo',
-        'mensaje' => 'mensaje'
+        'folio' => 'folio',
+        'persona' => 'persona'
     ];
     
     protected static $setters = [
-        'codigo' => 'setCodigo',
-        'mensaje' => 'setMensaje'
+        'folio' => 'setFolio',
+        'persona' => 'setPersona'
     ];
     
     protected static $getters = [
-        'codigo' => 'getCodigo',
-        'mensaje' => 'getMensaje'
+        'folio' => 'getFolio',
+        'persona' => 'getPersona'
     ];
     
     public static function attributeMap()
@@ -72,13 +72,16 @@ class Error implements ModelInterface, ArrayAccess
     
     public function __construct(array $data = null)
     {
-        $this->container['codigo'] = isset($data['codigo']) ? $data['codigo'] : null;
-        $this->container['mensaje'] = isset($data['mensaje']) ? $data['mensaje'] : null;
+        $this->container['folio'] = isset($data['folio']) ? $data['folio'] : null;
+        $this->container['persona'] = isset($data['persona']) ? $data['persona'] : null;
     }
     
     public function listInvalidProperties()
     {
         $invalidProperties = [];
+        if ($this->container['persona'] === null) {
+            $invalidProperties[] = "'persona' can't be null";
+        }
         return $invalidProperties;
     }
     
@@ -87,25 +90,25 @@ class Error implements ModelInterface, ArrayAccess
         return count($this->listInvalidProperties()) === 0;
     }
     
-    public function getCodigo()
+    public function getFolio()
     {
-        return $this->container['codigo'];
+        return $this->container['folio'];
     }
     
-    public function setCodigo($codigo)
+    public function setFolio($folio)
     {
-        $this->container['codigo'] = $codigo;
+        $this->container['folio'] = $folio;
         return $this;
     }
     
-    public function getMensaje()
+    public function getPersona()
     {
-        return $this->container['mensaje'];
+        return $this->container['persona'];
     }
     
-    public function setMensaje($mensaje)
+    public function setPersona($persona)
     {
-        $this->container['mensaje'] = $mensaje;
+        $this->container['persona'] = $persona;
         return $this;
     }
     
