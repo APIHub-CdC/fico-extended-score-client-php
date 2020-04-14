@@ -1,4 +1,4 @@
-# FICO extended score client php
+# fico-extended-score-client-php
 
 Es el primer score en el mercado mexicano que califica el nivel de cumplimiento de pago de un individuo, considerando al grupo de personas con las que comparto domicilio utilizando un algoritmo exclusivo de Círculo de Crédito.
 
@@ -19,13 +19,14 @@ apt-get install php7.3-mbstring
 ## Instalación
 
 Ejecutar: `composer install`
+
 ## Guía de inicio
 
 ### Paso 1. Generar llave y certificado
 
 - Se tiene que tener un contenedor en formato PKCS12.
 - En caso de no contar con uno, ejecutar las instrucciones contenidas en **lib/Interceptor/key_pair_gen.sh** ó con los siguientes comandos.
-- **opcional**: Para cifrar el contenedor, colocar una contraseña en una variable de ambiente.
+**opcional**: Para cifrar el contenedor, colocar una contraseña en una variable de ambiente.
 ```sh
 export KEY_PASSWORD=your_password
 ```
